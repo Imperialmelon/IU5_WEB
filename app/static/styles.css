@@ -1,0 +1,455 @@
+
+@font-face {
+    font-family: "SPX";
+  src: url('http://127.0.0.1:9001/api/v1/download-shared-object/aHR0cDovLzEyNy4wLjAuMTo5MDAwL2xhYjEvU3BhY2VYLnR0Zj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPTJIMkdYWVRLNUkyRzRESE5XSFFMJTJGMjAyNDA5MTIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwOTEyVDE1MDg0NlomWC1BbXotRXhwaXJlcz00MzIwMCZYLUFtei1TZWN1cml0eS1Ub2tlbj1leUpoYkdjaU9pSklVelV4TWlJc0luUjVjQ0k2SWtwWFZDSjkuZXlKaFkyTmxjM05MWlhraU9pSXlTREpIV0ZsVVN6VkpNa2MwUkVoT1YwaFJUQ0lzSW1WNGNDSTZNVGN5TmpFNU5qa3lNQ3dpY0dGeVpXNTBJam9pYldsdWFXOWhaRzFwYmlKOS5jaF9HYUQwNjlxQmhJVXF4d1ZDY2lnbnZQV1U1amhtQmFBVWQ4a1FidjRNZW9MbjZOQTRMenhDVkxWcHFobUU0T2poRGVrcmU0SFlwM1hzdkJKdU9NUSZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmdmVyc2lvbklkPTA2NDZjNDhhLWZhZTYtNGE4Yy04YTQyLTUwYjBhMzVjYjAzOSZYLUFtei1TaWduYXR1cmU9MDIxYmJhZDZkN2ZiMTNjMmMzNzIyNjZjOGY1OGNhNjRjZTk2Mjc3YTEzNTI2YjRjNDdhMmQ5NDMzNGYxNjc3ZA');}
+
+.mid{
+
+    display: flex;
+    align-self: center;
+    align-items: center;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    /* padding-left: 10%;
+    padding-right: 10%; */
+    /* margin-left: auto;
+    margin: auto; */
+    /* margin-top: auto; */
+}
+.container{
+
+margin: auto;
+  margin-top: auto;
+  margin-bottom: auto;
+    /* margin-left: 15px;
+    margin-right: 15px; */
+    display: grid;
+    grid-template-columns: repeat(3, 390px);
+    column-gap:50px;
+    /* padding-right: 10%;
+    padding-left: 10%; */
+    row-gap: 200px;
+
+}
+.card{
+    height: 360px;
+    width: 390px;
+    background-color: rgb(231, 235, 248);
+    /* padding: 10%; */
+    /* padding-top: 0px; */
+    display: flex;
+    flex-direction: column;
+    /* border: 1px solid black; */
+    /* opacity: 0; */
+    /* justify-content: space-between; */
+
+}
+.image{
+    width: 100%;
+    height: 360px;
+    object-fit: cover;
+    opacity: 1;
+}
+
+.properties_{
+    text-align: center;
+    margin-bottom: 5px;
+    margin-top: 20px;
+    font-weight: bold;
+    color: black;
+    font-size: larger;
+    /* padding-left: 10%;
+    padding-right: 10%; */
+}
+/* 
+.properties_.p{
+    text-align: center;
+    margin-top: 10px;
+} */
+
+.title{
+
+    /* margin-top: 16px; */
+    font-size: large;
+    font-weight: bold;
+    color: black;
+    margin: auto;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+.short-description{
+    font-size: 16px;
+    text-align: center;
+    font-weight: 500;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-family: "Robot", sans-serif;
+    color: black;
+}
+
+
+.button_click{
+    padding: 8px 10px; 
+    text-decoration: none;
+    font-size:20px;
+    font-weight: 500;
+    text-align: center;
+    display: inline-block;
+    margin: auto;
+    margin-top: 5px;
+    color:black
+}
+.button_click:hover{
+    background-color: grey;
+}
+
+.wrapper_discr{
+    padding-left: 10%;
+    padding-right: 10%;
+
+}
+
+.header{
+    position: relative;
+    padding-left: 10px;
+    /* text-align: center;
+    align-items: center; */
+    align-content: center;
+    top: 0;
+    width: 100% ;
+    height: 90px;
+    font-family: 'SPX', sans-serif;
+    font-size: 25px;
+    /* background-color: red; */
+    background: black;
+    border-bottom: 2px solid grey;
+    color: #FFFAFA;
+    /* background: #FFFAFA; */
+}
+/* .aftermid{
+    text-align: center;
+    margin-top: 40px;
+}
+
+
+
+.button_click.button_bordered{
+    align-content: center;
+    width: 200px;
+    height: 80px;
+    border: 1px solid black;
+    font-size: ;
+} */
+
+.header.p.name{
+    margin-top: 0;
+}
+* {box-sizing: border-box;}
+/* form {
+  position: relative;
+  margin-right: auto;
+  margin-left: auto;
+  width: 500px;
+} */
+input {
+  width: 100%;
+  height: 42px;
+  padding-left: 10px;
+  border: 1px solid black;
+  border-radius: 5px;
+  outline: none;
+  /* font-size: 15px; */
+  color: black;
+}
+input::placeholder{
+    font-family: "Roboto" sans-serif;
+    font-weight: bold;
+    color: black;
+}
+
+
+
+button {
+  position: absolute; 
+  top: 0;
+  right: 0px;
+  width: 42px;
+  height: 42px;
+  border: none;
+  background: rgb(0,0,0,0);
+  border-radius: 0 5px 5px 0;
+  cursor: pointer;
+}
+button:before {
+  content: "\f002";
+  font-family: FontAwesome;
+  font-size: 16px;
+  color: black;
+}
+
+.details_card {
+    width: 1100px;
+    margin-top: 50px;
+    height: 550px;
+    display: flex;
+  }
+  
+.details_card card-image {
+    object-fit: cover;
+    width: 50%;
+  }
+
+
+
+.image.det{
+    height:100%;
+}
+.title.det{
+    position: relative;
+    display: inline;
+    font-size: x-large;
+    margin-bottom: 10px;
+}
+
+.det_price{
+    margin-top: 20px;
+    font-weight: bold;
+    font-family: "Roboto", sans-serif;
+    font-size: large;
+}
+  
+  .card-content {
+    
+    width: 50%;
+    padding-left: 20px;
+  }
+
+.wrapper_det{
+    padding-top: 10%;
+    /* padding-bottom: 20%;
+    padding-left: 10%;
+    padding-right: 10%; */
+    display: block;
+    /* margin-top: 80px; */
+    height: 80%;
+    /* width: 200px;
+    height: 100px; */
+}
+
+
+  
+  .card-description {
+    width: 50%;
+    padding: 20px;
+  }
+  
+  .card-image {
+
+    width: 50%;
+  }
+
+  .det_discr{
+    display: inline-block;
+    text-align: center;
+    font-size: 15px;
+    font-family: "Roboto", sans-serif;
+    color: grey;
+    text-align: justify;
+  }
+  
+  .ul_header {
+    align-content: center;
+    width: 100% ;
+    height: 90px;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: black
+}
+
+.li_header {
+    float: left;
+}
+
+.li_header a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.wrapper_cart{
+  border: 2px solid red;
+  margin-top: 150px;
+  height: 150px;
+}
+ul {
+  align-content: center;
+  width: 100% ;
+  height: 100%;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  /* background-color: blacwk */
+}
+
+li {
+  float: left;
+}
+
+li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+
+/* Change the link color to #111 (black) on hover */
+
+
+
+
+
+
+
+
+.container_cart {
+  /* max-width: 600px; */
+  margin: auto;
+  padding: 20px;
+}
+
+.cart {
+  text-align: center;
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.products {
+  margin: auto;
+  border-top: 1px solid grey;
+  border-bottom: 1px solid grey;
+  padding: 20px 0;
+  width: 1000px;
+}
+
+.product {
+  display: flex;
+  align-items: center;
+  margin-bottom: 35px;
+  height: 120px;
+}
+
+.product img {
+  width: 140px;
+  height:90px;
+  margin-right: 20px;
+}
+.shrek{
+  margin-top: 20px;
+  font-size: 20px;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 10px;
+}
+
+.product-info {
+
+  width: 150px;
+}
+
+.product-name {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.product-price {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.total {
+  float: right;
+  font-weight: bold;
+  font-size: 20px;
+  text-align: right;
+  margin-top: 40px;
+}
+.product-total {
+  margin: auto;
+  display: flex;
+  width: 1000px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.product-total h2 {
+  font-size: 18px;
+}
+
+.total-container{
+  /* display: flex; */
+  width: 1000px;
+  margin: auto;
+}
+
+.container3 {
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+}
+
+.search-form {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  width: 500px;
+}
+
+.search-form input {
+  width: 100%;
+  height: 42px;
+  padding-left: 10px;
+  border: 1px solid black;
+  border-radius: 5px;
+  outline: none;
+  color: black;
+}
+
+.cart-form {
+  margin-left: auto;
+  margin-right: 20px;
+}
+
+.cart-link {
+  float: right;
+}
+
+
+.container4 {
+
+  width: 1000px;
+  margin: auto;
+  margin-top: 20px;
+  /* display: flex;
+  align-items: center; */
+}
+
+.container label {
+  margin-right: 10px;
+}
+
+.container input {
+  width: 200px;
+  height: 30px;
+  padding: 5px;
+  border: 1px solid #ccc;
+}

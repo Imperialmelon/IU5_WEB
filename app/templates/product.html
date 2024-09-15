@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}{% endblock %}
+{% block content %}
+<!-- <div class="header">SPACE Y</div> -->
+<div class="details_card">
+  <div class="card-image">
+    <img src="{{data.pic}}" alt="Описание изображения" class="image det">
+  </div>
+  <div class="card-content">
+    <div class="title det">{{data.title}}<br></div>
+    <div class="det_price">${{data.formated_price}}/1т
+    </div>
+    <div class="wrapper_det">
+        <div class="det_discr">{{data.discr}}
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+
+{% endblock %}
