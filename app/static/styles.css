@@ -351,7 +351,7 @@ li a {
   height:90px;
   margin-right: 20px;
 }
-.shrek{
+.elem_cnt{
   margin-top: 20px;
   font-size: 20px;
     position: absolute;
@@ -452,4 +452,11 @@ li a {
   height: 30px;
   padding: 5px;
   border: 1px solid #ccc;
+}
+
+.eee{
+  margin-left: 0px; 
+  display: flex; 
+  justify-content: space-between; 
+  flex: 1;
 }

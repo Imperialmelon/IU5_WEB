@@ -1,0 +1,15 @@
+{% load static %}
+<div class="card">
+    <div class="photo">
+        <img src="{{element.path}}" class="image">
+    </div>
+    <p class="title">{{element.title}}</p>
+    <div class="wrapper_discr">
+        <p class="short-description">{{element.short_discr}}</p>
+    <div class ="properties_">
+        <p>Цена за 1т: ${{element.formated_price}}</p>
+        
+    </div>
+    </div>
+    <a href="{% url 'cargo_url' element.id %}" class="button_click" style="margin: auto;">Подробнее</a>  
+</div>

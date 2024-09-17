@@ -21,36 +21,11 @@
         <h2>Всего</h2>
       </div>
     <div class="products">
-        {% for order in data.order.items %}
-            {% include 'product_det_card.html' with element=order %}
+        {% for order in data.order %}
+            {% include 'cargo_det_card.html' with element=order %}
         {% empty %}
             <li>Список пуст</li>
         {% endfor %}
-      <!-- <div class="product">
-        <img src="product-1.jpg" alt="Product 1">
-        <div class="product-info">
-          <h3 class="product-name">Product 1</h3>
-          <p class="product-price">$10.00</p>
-        </div>
-        <p class="total">$10.00</p>
-      </div>
-      <div class="product">
-        <img src="https://tourpedia.ru/wp-content/uploads/2018/01/%D0%BF%D0%B0%D1%80%D0%BA-%D0%9F%D0%BB%D0%B8%D1%82%D0%B2%D0%B8%D1%86%D0%BA%D0%B8%D0%B5-%D0%BE%D0%B7%D0%B5%D1%80%D0%B0.jpg" alt="Product 2">
-        <div class="product-info">
-          <h3 class="product-name">Product 2</h3>
-          <p class="product-price">$20.00</p>
-        </div>
-        <p class="total">$20.00</p>
-      </div>
-      <div class="product">
-        <img src="product-3.jpg" alt="Product 3">
-        <div class="product-info">
-          <h3 class="product-name">Product 3</h3>
-          <p class="product-price">$30.00</p>
-        </div>
-        <p class="total">$30.00</p>
-      </div> -->
-      
     </div>
     <div class="total-container">
       <p class="total">Всего: ${{data.total}}</p>
