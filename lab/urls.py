@@ -21,7 +21,7 @@ from app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.GetCargo_list),
+    path('', views.GetCargoes_list),
     path('cargo/<int:id>/', views.GetCargo, name='cargo_url'),
-    path('cargoes/<int:id>/', views.GetCargoes, name='order'),
+    path('shipping/<int:id>/', views.GetShipping, name='shipping'),
 ]

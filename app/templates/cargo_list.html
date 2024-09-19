@@ -29,20 +29,20 @@ Starship Delivery System
     <div class="container3">
         <form class="search-form" method="get" action="" enctype="multipart/form-data">
           {% csrf_token %}
-          <input name="product_name" placeholder="Поиск" type="text" value="{{data.srch_text}}"><br><br>
+          <input name="cargo_name" placeholder="Поиск" type="text" value="{{data.srch_text}}"><br><br>
           <button type="submit"></button>
         </form>
         <div class="cart-form">
           <form action="" enctype="multipart/form-data">
-            <a href="{% url 'order' 1 %}" style="font-size: 20px; font-family: 'Roboto', sans-serif;">Грузы ({{data.cnt}})</a>
+            <a href="{% url 'shipping' data.ship_id %}" style="font-size: 20px; font-family: 'Roboto', sans-serif;">Грузы ({{data.cnt}})</a>
           </form>
         </div>
       </div>
       
 <div class="mid">
     <div class="container">
-        {% for product in data.products %}
-            {% include 'ship_element.html' with element=product %}
+        {% for cargo in data.products %}
+            {% include 'ship_element.html' with element=cargo %}
         {% empty %}
         {% endfor %}
     </div>

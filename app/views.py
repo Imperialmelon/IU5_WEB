@@ -7,13 +7,13 @@ from django.http import HttpResponse
 
 cargoes = [
       {'id' : 1, 'title' : 'Техническое оборудование','short_discr' : 'Техническое оборудование для научных объектов' ,'discr' : 'Оборудование спроектировано с учетом самых высоких стандартов и протестировано в условиях, имитирующих марсианскую среду. Подходит для эксплуатации в условиях марсианской среды.',
-        'pic' : '1.jpg', 'price' : 15000000, 'formated_price' : "15.000.000"},
+        'pic' : '1.jpg', 'price' : 15000000, 'formated_price' : "15.000.000", 'path' : "http://127.0.0.1:9000/lab1/1.jpg"},
        {'id' : 2, 'title' : 'Научное оборудование','short_discr' : 'Различное научное оборудование',     'discr':    'Различное научное оборудование. Предназначено для эксплуатации в условиях научно-исследовательских станций. В состав входят микроскопы, приборы для анализа образцов почвы, астрономическое оборудование и приборы для наблюдения за флорой и фауной с Земли в условиях Марса.', 
- 'pic' : '2.jpg', 'price' : 10000000,'formated_price' : "10.000.000"},
+ 'pic' : '2.jpg', 'price' : 10000000,'formated_price' : "10.000.000", 'path' : "http://127.0.0.1:9000/lab1/2.jpg"},
         {'id' : 3, 'title' : 'Продовольствие','short_discr' : 'Провиант для сотрудников научных объектов', 'discr' : 'Продовольственные контейнеры, содержащие все необходимые вещества для работников научных станций.'        , 
- 'pic' : '3.png','price' : 10000000, 'formated_price' : "10.000.000"},
+ 'pic' : '3.png','price' : 10000000, 'formated_price' : "10.000.000", 'path' : "http://127.0.0.1:9000/lab1/3.png"},
          {'id' : 4, 'title' : 'Строительные материалы', 'short_discr' : 'Сплавы из нержавеющих металлов, сверхпрочные ткани, композитные стекла ', 'discr' :    'Материалы предназначены для возведения научных и военных баз, имеют возможность эксплуатации в крайне агрессивных средах.'    ,
-           'pic' : '4.avif', 'price' : 1000000, 'formated_price' : "10.000.000"},
+           'pic' : '4.avif', 'price' : 1000000, 'formated_price' : "10.000.000", 'path' : "http://127.0.0.1:9000/lab1/4.avif"},
 ]
 
 # order = [
@@ -25,33 +25,32 @@ cargoes = [
 #     }
 # ]
 
-ship = [
-    {'id' : 1, 'items': [
-     {'id' : 1, 'title' : 'Техническое оборудование','cnt' : 2 , 'pic' : '1.jpg', 'price' : 15000000, 'formated_price' : "15.000.000", 'total' : 30000000},
-             {'id' : 2, 'title' : 'Научное оборудование','cnt' : 3,'pic' : '2.jpg', 'price' : 10000000,'formated_price' : "10.000.000", 'total' : 30000000}]
-    }, {
-        'id' : 2, 'items' :     {'id' : 1, 'title' : 'Техническое оборудование','cnt' : 2 , 'pic' : '1.jpg', 'price' : 15000000, 'formated_price' : "15.000.000", 'total' : 30000000},
+shippings = [
+    {'id' : 1, 'date' : '12.09.2024','organization' : 'Объединенная Аэрокосмическая Корпорация', 'items': [
+     {'id' : 1, 'title' : 'Техническое оборудование','cnt' : 2 , 'pic' : '1.jpg', 'price' : 15000000, 'formated_price' : "15.000.000", 'total' : 30000000, 'path' : "http://127.0.0.1:9000/lab1/1.jpg"},
+             {'id' : 2, 'title' : 'Научное оборудование','cnt' : 3,'pic' : '2.jpg', 'price' : 10000000,'formated_price' : "10.000.000", 'total' : 30000000, 'path' : "http://127.0.0.1:9000/lab1/2.jpg"}]
+    }, 
+    {
+        'id' : 2, 'date' : '12.09.2024','organization' : 'Объединенная Аэрокосмическая Корпорация', 'items' :     [{'id' : 1, 'title' : 'Техническое оборудование','cnt' : 2 , 'pic' : '1.jpg', 'price' : 15000000, 'formated_price' : "15.000.000", 'total' : 30000000, 'path' : "http://127.0.0.1:9000/lab1/1.jpg"}]
     }
 ]
-ORDERS_NUM = len(ship)
+ORDERS_NUM = len(shippings[0]['items'])
 
 
 
-def get_list(mas : list, product_name):
+def get_list(mas : list, cargo_name):
     lst_ = []
-    print(product_name)
+    print(cargo_name)
     for product in mas:
-        if product['title'].lower().startswith(product_name.lower()):
+        if product['title'].lower().startswith(cargo_name.lower()):
             lst_.append(product)
-            lst_[-1]['path'] = f"http://127.0.0.1:9000/lab1/{lst_[-1]['pic']}"
     return lst_
 
-def get_order_list(ship : list, id):
-    ship = ship[id-1]
+def get_order_list(shippings : list, id):
+    ship = shippings[id-1]
     mas = []
     for product in ship['items']:
         mas.append(product)
-        mas[-1]['path'] = f"http://127.0.0.1:9000/lab1/{mas[-1]['pic']}"
     return mas
 
 # def GetProducts(request):
@@ -65,17 +64,13 @@ def get_order_list(ship : list, id):
 #         'cnt' : ORDERS_NUM, 'srch_text' : product_name
 #     }
 #     })
-def GetCargo_list(cargoes_lists):
-    product_name = cargoes_lists.GET.get('product_name', '')
-    print(product_name)
-    # if request.method == 'POST':
-    #     text = request.POST['text'].lower()
-    # else:
-    #     text = ""
-    l = get_list(cargoes, product_name)
+def GetCargoes_list(cargoes_lists):
+    cargo_name = cargoes_lists.GET.get('cargo_name', '')
+    data = get_list(cargoes, cargo_name)
     return render(cargoes_lists, 'cargo_list.html', {'data' : {
-        'products' : l,
-        'cnt' : ORDERS_NUM, 'srch_text' : product_name
+        'products' : data,
+        'cnt' : ORDERS_NUM, 'srch_text' : cargo_name,
+        'ship_id' : 1
     }
     })
 def GetCargo(cargo_info, id):
@@ -105,21 +100,23 @@ def GetCargo(cargo_info, id):
 #     }
 #     })
 
-def GetCargoes(cargo_order, id):
+def GetShipping(cargo_order, id):
     cnt = ORDERS_NUM
     # cnt = 0
     if cnt != 0:
         total = 0
-        for i in ship:
+        for i in shippings:
             if i['id'] == id:
                 for j in i['items']:
                     total += j['total']
                 # total += i['pri'][]
-        mas = get_order_list(ship, id)
+        mas = get_order_list(shippings, id)
         return render(cargo_order, 'ship_list.html',
                       {'data': {
                           'order' : mas,
-                          'total' : total
+                          'total' : total,
+                          'organization' : shippings[id-1]['organization'],
+                          'date' : shippings[id-1]['date']
                       }})
     return render(cargo_order, 'cargo_list.html', {'data' : {
         'products' : get_list("", cargoes),
