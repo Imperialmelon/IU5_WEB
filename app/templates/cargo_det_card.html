@@ -1,12 +1,13 @@
-{% load static %}
+
+  {% load static %}
 <div class="product">
-    <img src="{{element.pic}}" alt="Фото продукта">
-    <div style="margin-left: 0px; display: flex; justify-content: space-between; flex: 1;">
+    <img src="{{element.cargo.logo_file_path}}" alt="Фото продукта">
+    <div class="eee">
     <div class="product-info">
-      <h3 class="product-name">{{element.title}}</h3>
-      <p class="product-price">${{element.price}}</p>
+      <h3 class="product-name">{{element.cargo.title}}</h3>
+      <p class="product-price">${{element.cargo.price_per_ton}}/1т</p>
     </div>
-    <div class="shrek">{{element.cnt}}</div>
+    <div class="elem_cnt">{{element.cnt}}</div>
     <p class="total">${{element.total}}</p>
     </div>
   </div>

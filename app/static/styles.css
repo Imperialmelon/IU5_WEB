@@ -1,7 +1,8 @@
 
 @font-face {
     font-family: "SPX";
-  src: url('http://127.0.0.1:9001/api/v1/download-shared-object/aHR0cDovLzEyNy4wLjAuMTo5MDAwL2xhYjEvU3BhY2VYLnR0Zj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPTJIMkdYWVRLNUkyRzRESE5XSFFMJTJGMjAyNDA5MTIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwOTEyVDE1MDg0NlomWC1BbXotRXhwaXJlcz00MzIwMCZYLUFtei1TZWN1cml0eS1Ub2tlbj1leUpoYkdjaU9pSklVelV4TWlJc0luUjVjQ0k2SWtwWFZDSjkuZXlKaFkyTmxjM05MWlhraU9pSXlTREpIV0ZsVVN6VkpNa2MwUkVoT1YwaFJUQ0lzSW1WNGNDSTZNVGN5TmpFNU5qa3lNQ3dpY0dGeVpXNTBJam9pYldsdWFXOWhaRzFwYmlKOS5jaF9HYUQwNjlxQmhJVXF4d1ZDY2lnbnZQV1U1amhtQmFBVWQ4a1FidjRNZW9MbjZOQTRMenhDVkxWcHFobUU0T2poRGVrcmU0SFlwM1hzdkJKdU9NUSZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmdmVyc2lvbklkPTA2NDZjNDhhLWZhZTYtNGE4Yy04YTQyLTUwYjBhMzVjYjAzOSZYLUFtei1TaWduYXR1cmU9MDIxYmJhZDZkN2ZiMTNjMmMzNzIyNjZjOGY1OGNhNjRjZTk2Mjc3YTEzNTI2YjRjNDdhMmQ5NDMzNGYxNjc3ZA');}
+    color: red;
+  src: url('http://127.0.0.1:9000/lab1/SpaceX.ttf');}
 
 .mid{
 
@@ -84,7 +85,7 @@ margin: auto;
     width: 100%;
     margin-top: 10px;
     margin-bottom: 5px;
-    font-family: "Robot", sans-serif;
+    font-family: "Roboto", sans-serif;
     color: black;
 }
 
@@ -170,7 +171,7 @@ input::placeholder{
 
 
 
-button {
+.srch_button {
   position: absolute; 
   top: 0;
   right: 0px;
@@ -181,7 +182,7 @@ button {
   border-radius: 0 5px 5px 0;
   cursor: pointer;
 }
-button:before {
+.srch_button:before {
   content: "\f002";
   font-family: FontAwesome;
   font-size: 16px;
@@ -351,7 +352,7 @@ li a {
   height:90px;
   margin-right: 20px;
 }
-.shrek{
+.elem_cnt{
   margin-top: 20px;
   font-size: 20px;
     position: absolute;
@@ -453,3 +454,32 @@ li a {
   padding: 5px;
   border: 1px solid #ccc;
 }
+
+.eee{
+  margin-left: 0px; 
+  display: flex; 
+  justify-content: space-between; 
+  flex: 1;
+}
+.www{
+  float: left;
+}
+.change_back_button {
+  background-color: black;
+  color: white;
+  padding: 10px 20px;
+  font-weight: bold;
+  font-family: "Roboto", sans-serif;
+  border: none;
+  cursor: pointer;
+  margin-top: 40px;
+  text-align: center;
+  transition: background-color 0.5s ease-in-out;
+}
+
+.change_back_button:hover {
+  background-color: white;
+  color: black;
+  border: 1px solid black;
+}
+

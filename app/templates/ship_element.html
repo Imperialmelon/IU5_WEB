@@ -1,17 +1,22 @@
+
 {% load static %}
 <div class="card">
     <div class="photo">
-        <img src="{{element.pic}}" class="image">
+        <img src="{{element.logo_file_path}}" class="image">
     </div>
     <p class="title">{{element.title}}</p>
     <div class="wrapper_discr">
-        <p class="short-description">{{element.short_discr}}</p>
+        <p class="short-description">{{element.short_description}}</p>
     <div class ="properties_">
-        <p>Цена за 1т: ${{element.formated_price}}</p>
+        <p>Цена за 1т: ${{element.price_per_ton}}</p>
         
     </div>
-    <!-- <a href="{% url 'products_url' element.id %}" class="button_click">Подробнее</a>   -->
-    <!-- <a href="{% url 'products_url' element.id %}" class="button_click" style="margin: auto;">Подробнее</a>   -->
     </div>
-    <a href="{% url 'products_url' element.id %}" class="button_click" style="margin: auto;">Подробнее</a>  
+    <div style="display: flex;">
+        <button class="change_back_button" style="margin-top: 0px;">Добавить груз в отправление</button>
+        <a href="{% url 'cargo_url' element.id %}" class="button_click" style="margin: auto;">Подробнее</a>  
+
+    </div>
+    <!-- <a href="{% url 'cargo_url' element.id %}" class="button_click" style="margin: auto;">Подробнее</a>   -->
+
 </div>
