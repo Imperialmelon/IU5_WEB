@@ -483,3 +483,19 @@ li a {
   border: 1px solid black;
 }
 
+.inactive{
+  pointer-events: none;
+  color:rebeccapurple;
+}
+
+.plus{
+  background-color: white;
+  color: black;
+  font-weight: bold;
+  font-family: "Roboto", sans-serif;
+  border: none;
+  cursor: pointer;
+  /* margin-top: 20px; */
+  text-align: center;
+  border: 1px solid black;
+}

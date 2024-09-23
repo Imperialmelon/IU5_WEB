@@ -21,13 +21,13 @@
     <div class="products">
         {% for order in data.data %}
             {% include 'cargo_det_card.html' with element=order %}
-        {% empty %}
-            <li>Список пуст</li>
         {% endfor %}
     </div>
 
     <div class="total-container">
-      <button class="change_back_button">Расформировать отправление</button>
+      <form method="post" action="{% url 'delete_shipping' data.id %}">
+        {% csrf_token %} 
+      <button class="change_back_button" value="{{data.id}}" name="drop_shipping">Расформировать отправление</button></form>
       <p class="total">Всего: ${{data.total}}</p>
     </div>
   </div>

@@ -24,4 +24,9 @@ urlpatterns = [
     path('', views.GetCargoes_list),
     path('cargo/<int:id>/', views.GetCargo, name='cargo_url'),
     path('shipping/<int:id>/', views.GetShipping, name='shipping'),
+    path('add_cargo_to_ship/', views.add_cargo_to_shipping, name='add_cargo_to_ship'),
+    path('increase_cargo/', views.increase, name='increase_cargo'),
+    path('delete_shipping/<int:id>', views.delete_shipping, name='delete_shipping'),
+    
+
 ]

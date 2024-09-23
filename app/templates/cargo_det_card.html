@@ -8,6 +8,11 @@
       <p class="product-price">${{element.cargo.price_per_ton}}/1т</p>
     </div>
     <div class="elem_cnt">{{element.cnt}}</div>
+    <form method="post" action="{% url 'increase_cargo' %}" style="margin-top: 20px;">
+      {% csrf_token %} 
+    <button class="plus" name="increase" value="{{element.cargo.id}} ">+</button>
+    </form>
     <p class="total">${{element.total}}</p>
     </div>
+
   </div>

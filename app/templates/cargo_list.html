@@ -32,9 +32,14 @@ Starship Delivery System
           <input name="cargo_name" placeholder="Поиск" type="text" value="{{data.srch_text}}"><br><br>
           <button type="submit" class="srch_button"></button>
         </form>
-        <div class="cart-form">
+        <div class="cart-form" >
           <form action="" enctype="multipart/form-data">
-            <a href="{% url 'shipping' data.ship_id %}" style="font-size: 20px; font-family: 'Roboto', sans-serif;">Отправление ({{data.cnt}})</a>
+            {% if data.cnt == 0 %}
+            <a href="" style="font-size: 20px; font-family: 'Roboto', sans-serif; pointer-events: none;">Отправление ({{data.cnt}})</a>
+            {% else %}
+            <a href="{% url 'shipping' data.ship_id %}" style="font-size: 20px; font-family: 'Roboto', sans-serif;">
+              Отправление ({{data.cnt}})</a>
+              {% endif %}
           </form>
         </div>
       </div>
