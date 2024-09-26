@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from .models import Cargo, Shipping,Shipping_Cargo
+from django.core.exceptions import BadRequest
 
 from django.http import HttpResponse
 from django.db.models import Q
@@ -8,10 +9,14 @@ from django.db.models import F
 from django.db import connection
 import psycopg2
 
-USER_ID = 7
+USER_ID = 6
 
 
 def increase(request):
+
+    """
+    увеличения числа товара в отправлении
+    """
     data = request.POST
     cargo_id = data.get('increase')
     print(cargo_id)
@@ -29,11 +34,15 @@ def increase(request):
 
 
 def get_or_create_shipping(user_id):
+
+    """
+    создание отправления или создание отправления
+    """
     req = Shipping.objects.filter(client_id=USER_ID,
                                                     status=Shipping.RequestStatus.DRAFT).first()
     
     if req is None:
-        shipping = Shipping(client_id=USER_ID,status=Shipping.RequestStatus.DRAFT, organization='Объединенная Аэрокосмическая Корпорация')
+        shipping = Shipping(client_id=USER_ID,status=Shipping.RequestStatus.DRAFT, organization='North Atlantic Treaty Organization')
         shipping.save()
         return shipping.id
     return req.id
@@ -42,6 +51,8 @@ def get_cargoes_in_shipping(shipping_id):
      """
      получение числа грузов в текущем черновом отправлении
      """
+
+     print(Shipping_Cargo.objects.filter(shipping_id=shipping_id).select_related('cargo').count())
      return Shipping_Cargo.objects.filter(shipping_id=shipping_id).select_related('cargo').count() 
 
 def GetCargoes_list(cargoes_lists):
@@ -51,6 +62,7 @@ def GetCargoes_list(cargoes_lists):
     cargo_name = cargoes_lists.GET.get('cargo_name', '')
     req = Shipping.objects.filter(client_id=USER_ID,
                                                 status=Shipping.RequestStatus.DRAFT).first()
+    
     
     cargoes_list = Cargo.objects.filter(title__istartswith=cargo_name, is_active=True).order_by('id')
     return render(cargoes_lists, 'cargo_list.html', {'data' : {
@@ -89,13 +101,19 @@ def add_cargo_to_shipping(request):
 
 
 def delete_shipping(request, id):
+
+    """
+    удаление отправления
+    """
+
     print(id)
 
     sql = f"update shipping set status = 'DELETED' where id={id}"
     with connection.cursor() as cursor:
         cursor.execute(sql)
 
-    return GetShipping(request,id)
+    return GetCargoes_list(request)
+    # return GetShipping(request,id)
 
 
 def get_shipping_data(shipping_id):
@@ -104,15 +122,11 @@ def get_shipping_data(shipping_id):
     """
     req = Shipping.objects.filter(~Q(status=Shipping.RequestStatus.DELETED),
                                                 id=shipping_id).first()
+
+    print('shrek')
     
     if req is None:
-        return {
-            'id' : shipping_id,
-            'data' : [],
-            'total' : 0,
-            'org' : '',
-            'creation_datetime' : ''
-        }
+        raise BadRequest('Invalid Request')
     content = Shipping_Cargo.objects.filter(shipping=shipping_id).select_related('cargo').annotate(cnt=F('amount'), total=F('amount')* F('cargo__price_per_ton')
      ,organization=F('shipping__organization'),        creation_datetime=F('shipping__creation_datetime'))                                                                                      
     org, creation_datetime = content[0].organization, content[0].creation_datetime
