@@ -9,7 +9,7 @@ from django.db.models import F
 from django.db import connection
 import psycopg2
 
-USER_ID = 6
+USER_ID = 2
 
 
 def increase(request):
@@ -107,8 +107,13 @@ def delete_shipping(request, id):
     """
 
     print(id)
-
-    sql = f"update shipping set status = 'DELETED' where id={id}"
+    shipping_cargos = Shipping_Cargo.objects.filter(shipping_id=id)
+    total_sum = 0
+    for shipping_cargo in shipping_cargos:
+        cargo = shipping_cargo.cargo
+        amount = shipping_cargo.amount
+        total_sum += cargo.price_per_ton * amount
+    sql = f"update shipping set status = 'DELETED', total_price ={total_sum} where id={id}"
     with connection.cursor() as cursor:
         cursor.execute(sql)
 
@@ -123,7 +128,6 @@ def get_shipping_data(shipping_id):
     req = Shipping.objects.filter(~Q(status=Shipping.RequestStatus.DELETED),
                                                 id=shipping_id).first()
 
-    print('shrek')
     
     if req is None:
         raise BadRequest('Invalid Request')

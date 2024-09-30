@@ -39,6 +39,7 @@ class Shipping(models.Model):
     organization = models.CharField(max_length=255)
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_requests')
     manager = models.ForeignKey(User, on_delete=models.CASCADE, related_name='managed_requests', blank=True, null=True)
+    total_price = models.IntegerField(default=0)
 
     def __str__(self):
         return str(self.id)
