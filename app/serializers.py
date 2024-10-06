@@ -5,11 +5,14 @@ class CargoSerializer(serializers.ModelSerializer):
         model = Cargo
         fields = ['pk','title' , 'price_per_ton', 'short_description' , 'description', 'is_active', 'logo_file_path']
         read_only_fields = ['pk']
+    
+
+
 
 class ShippingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shipping
-        fields = ['pk',"creation_datetime", 'status', "completion_datetime" , 'client', 'manager' , 'organization' ,'total_price']
+        fields = ['pk',"creation_datetime", 'status', "completion_datetime" , 'formation_datetime' ,  'client', 'manager' , 'organization' ,'total_price']
         # read_only_fields = ['status']
 
 class Shipping_CargosSerializer(serializers.ModelSerializer):
@@ -42,22 +45,41 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
-class Cargo_for_shippingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Cargo
-        fields = ["pk", "title",  "short_description", "logo_file_path"]
+# class Cargo_for_shippingSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Cargo
+#         fields = ["pk", "title",  "short_description", "logo_file_path"]
 
 
 class connection_Serializer(serializers.ModelSerializer):
-    cargo = Cargo_for_shippingSerializer()
-
-    class Meta:
-        model = Shipping_Cargo
-        fields = ["pk", "cargo", "amount"]        
+      cargo = serializers.SerializerMethodField()
+      def get_cargo(self, obj):
+           return {
+            'pk' : obj.id,
+            "title": obj.cargo.title,
+            "short_description": obj.cargo.short_description,
+            "description" : obj.cargo.description,
+            "price_per_ton" : obj.cargo.price_per_ton,
+            "logo_file_path": obj.cargo.logo_file_path,
+        }
+      class Meta:
+            model = Shipping_Cargo
+            fields = ["cargo", 'amount']        
 
 
 class Shipping_with_info_Serializer(serializers.ModelSerializer):
-        cargo_list = connection_Serializer(source='shipping_cargo_set', many=True)
+        cargo_list = serializers.SerializerMethodField()
+
+        def get_cargo_list(self, obj):
+            cargo_list = connection_Serializer(obj.shipping_cargo_set, many=True).data
+            amount_list = [cargo['amount'] for cargo in cargo_list]
+
+            cargo_list = [cargo['cargo'] for cargo in cargo_list]
+            for i,cargo in enumerate(cargo_list):
+                 cargo['amount'] = amount_list[i]
+  
+
+            return cargo_list
         class Meta:
             model = Shipping
             fields = ['pk', "creation_datetime",  "completion_datetime" , 'client', 'manager' , 'organization', 'cargo_list']

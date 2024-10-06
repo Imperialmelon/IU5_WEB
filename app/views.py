@@ -45,11 +45,21 @@ def Get_CargoList(request):
     else:
          cargoes_list = Cargo.objects.filter(title__istartswith=cargo_name, is_active=True).order_by('id')
     serializer = CargoSerializer(cargoes_list, many=True)
+
+    cnt = Shipping_Cargo.objects.filter(shipping_id=req.id).select_related('cargo').count() if req.id is not None else 0
+    
+    print(serializer.data)
+    # res = {
+    #     k : v for 
+    # }
+    # aboba = manyCargoesSerializer(cargoes_list, many=True)
+    cargoes_list = serializer.data
+    cargoes_list.append(f'shipping_id : {req.id if req is not None else 0}')
+    cargoes_list.append(f'cnt : {cnt}')
+    
     return Response(
-        {
-            'cargoes' : serializer.data,
-            'shipping_id' : req.id if req is not None else 0
-        },
+        cargoes_list,
+
         status=status.HTTP_200_OK
     )
 
@@ -69,7 +79,6 @@ def add_Cargo(request):
     """
     добавить новую услугу
     """
-    print(request.data)
     serilizer = CargoSerializer(data=request.data)
     if serilizer.is_valid():
         cargo = serilizer.save()
@@ -330,11 +339,12 @@ def delete_cargo_from_shipping(request, ck, sk):
 
 
 @api_view(['PUT'])
-def change_shipping_cargo(request, pk):
+def change_shipping_cargo(request, ck, sk):
     """
     Изменение данных о грузе в отправлении
     """
-    cargo_in_shipping = Shipping_Cargo.objects.filter(id=pk).first()
+    print(ck, sk)
+    cargo_in_shipping = Shipping_Cargo.objects.filter(cargo=ck, shipping=sk).first()
     if cargo_in_shipping is None:
         return Response("Cargo not found", status=status.HTTP_404_NOT_FOUND)
     serializer = Shipping_CargosSerializer(cargo_in_shipping, data=request.data, partial=True)
