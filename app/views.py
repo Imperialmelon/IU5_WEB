@@ -7,7 +7,7 @@ import psycopg2
 from lab.settings import MINIO_ENDPOINT_URL, MINIO_ACCESS_KEY,MINIO_BUCKET_NAME,MINIO_SECRET_KEY,MINIO_SECURE
 from rest_framework import status
 from django.contrib.auth.models import User
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes, parser_classes
 from rest_framework.response import *
 from .serializers import ShippingSerializer,CargoSerializer,Shipping_CargosSerializer,ResolveShipping, UserSerializer, Shipping_with_info_Serializer,Adding_to_shippingSerializer
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -17,9 +17,14 @@ from datetime import datetime
 from dateutil.parser import parse
 from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.authtoken.models import Token as T
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.authentication import TokenAuthentication
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+from .redis import session_storage
+from rest_framework.parsers import FormParser
+import uuid
+from .auth import Auth_by_Session, AuthIfPos
+from .permissions import IsAuth, IsAuthManager
 
 
 SINGLE_USER = User(id=2, username='OAK')
@@ -27,8 +32,27 @@ SINGLE_ADM = User(id=3, username='Admin1')
 
 
 USER_ID = 6
+@swagger_auto_schema(method='get',
+                     manual_parameters=[
+                         openapi.Parameter('cargo_name',
+                                           type=openapi.TYPE_STRING,
+                                           description='cargo_name',
+                                           in_=openapi.IN_QUERY),
+                     ],
+                     responses={
+                         status.HTTP_200_OK: openapi.Schema(
+                             type=openapi.TYPE_OBJECT,
+                             properties={
+                                 'cargoes_list': openapi.Schema(type=openapi.TYPE_ARRAY,
+                                                            items=openapi.Schema(type=openapi.TYPE_OBJECT)),
+                             }
+                         ),
+                         status.HTTP_403_FORBIDDEN: "Forbidden",
+                     })
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
+@authentication_classes([AuthIfPos])
 def Get_CargoList(request):
     """
     получение списка услуг
@@ -38,15 +62,22 @@ def Get_CargoList(request):
     if price_filter is not None:
         filters = Q(price_per_ton__gte=price_filter)
     cargo_name = request.query_params.get('cargo_name', '')
-    req = Shipping.objects.filter(client_id=SINGLE_USER.id,
+    user = request.user
+    print(user)
+    req = None
+    cargos_in_shipping = 0
+    if not request.user.is_anonymous:
+
+        req = Shipping.objects.filter(client_id=user.pk,
                                                 status=Shipping.RequestStatus.DRAFT).first()
+        if req is not None:
+             cargos_in_shipping = Shipping_Cargo.objects.filter(shipping_id=req.id).select_related('cargo').count() if req.id is not None else 0
     if filters is not None:
         cargoes_list = Cargo.objects.filter(filters, title__istartswith=cargo_name, is_active=True).order_by('id')
     else:
          cargoes_list = Cargo.objects.filter(title__istartswith=cargo_name, is_active=True).order_by('id')
     serializer = CargoSerializer(cargoes_list, many=True)
 
-    cnt = Shipping_Cargo.objects.filter(shipping_id=req.id).select_related('cargo').count() if req.id is not None else 0
     
     print(serializer.data)
     # res = {
@@ -55,7 +86,7 @@ def Get_CargoList(request):
     # aboba = manyCargoesSerializer(cargoes_list, many=True)
     cargoes_list = serializer.data
     cargoes_list.append(f'shipping_id : {req.id if req is not None else 0}')
-    cargoes_list.append(f'cnt : {cnt}')
+    cargoes_list.append(f'cnt : {cargos_in_shipping}')
     
     return Response(
         cargoes_list,
@@ -63,6 +94,13 @@ def Get_CargoList(request):
         status=status.HTTP_200_OK
     )
 
+
+@swagger_auto_schema(method='get',
+                     responses={
+                         status.HTTP_200_OK: CargoSerializer(),
+                         status.HTTP_404_NOT_FOUND: "Not Found",
+                     })
+@permission_classes([AllowAny])
 @api_view(['GET'])
 def Get_Cargo(request, pk):
     """
@@ -74,6 +112,15 @@ def Get_Cargo(request, pk):
         return Response(serilizer.data, status=status.HTTP_200_OK)
     return Response("No such cargo", status=status.HTTP_404_NOT_FOUND)
 
+
+@swagger_auto_schema(method='post',
+                     request_body=CargoSerializer,
+                     responses={
+                         status.HTTP_200_OK: CargoSerializer(),
+                         status.HTTP_400_BAD_REQUEST: "Bad Request",
+                         status.HTTP_403_FORBIDDEN: "Forbidden",
+                     })
+@permission_classes([IsAuthManager])
 @api_view(['POST'])
 def add_Cargo(request):
     """
@@ -86,6 +133,15 @@ def add_Cargo(request):
         return Response(serilizer.data, status=status.HTTP_200_OK)
     return Response('Failed to add cargo', status=status.HTTP_400_BAD_REQUEST)
 
+
+@swagger_auto_schema(method='put',
+                     request_body=CargoSerializer,
+                     responses={
+                         status.HTTP_200_OK: CargoSerializer(),
+                         status.HTTP_400_BAD_REQUEST: "Bad Request",
+                         status.HTTP_404_NOT_FOUND: "Not Found",
+                     })
+@permission_classes([IsAuthManager])
 @api_view(['PUT'])
 def Change_Cargo(request, pk):
     """
@@ -101,6 +157,13 @@ def Change_Cargo(request, pk):
     else:
         return Response('Incorrect data', status=status.HTTP_400_BAD_REQUEST)
     
+
+@swagger_auto_schema(method='delete',
+                     responses={
+                         status.HTTP_200_OK: "OK",
+                         status.HTTP_403_FORBIDDEN: "Forbidden",
+                         status.HTTP_404_NOT_FOUND: "Not Found",
+                     })       
 @api_view(['DELETE'])
 def Delete_Cargo(request, pk):
     """
@@ -123,7 +186,15 @@ def Delete_Cargo(request, pk):
     cargo.is_active = False
     cargo.save()
     return Response('Succesfully removed the cargo', status=status.HTTP_200_OK)
-    
+
+
+
+@swagger_auto_schema(method='post',
+                     responses={
+                         status.HTTP_200_OK: "OK",
+                         status.HTTP_403_FORBIDDEN: "Forbidden",
+                         status.HTTP_404_NOT_FOUND: "Not Found",
+                     })
 @api_view(['POST'])
 def CreateShipping(request, pk):
     """
@@ -150,7 +221,17 @@ def get_or_create_shipping(user_id):
         return shipping.id
     return req.id
 
-
+@swagger_auto_schema(method="post",
+                     manual_parameters=[
+                         openapi.Parameter(name="image",
+                                           in_=openapi.IN_QUERY,
+                                           type=openapi.TYPE_FILE,
+                                           required=True, description="Image")],
+                     responses={
+                         status.HTTP_200_OK: "OK",
+                         status.HTTP_400_BAD_REQUEST: "Bad Request",
+                         status.HTTP_403_FORBIDDEN: "Forbidden",
+                     })
 @api_view(['POST'])
 def load_image_to_minio(request, pk):
     """
@@ -173,6 +254,29 @@ def load_image_to_minio(request, pk):
     cargo.save()
     return Response('Succesfully added/changed pic', status=status.HTTP_200_OK)
 
+
+
+@swagger_auto_schema(method='get',
+                     manual_parameters=[
+                         openapi.Parameter('status',
+                                           type=openapi.TYPE_STRING,
+                                           description='status',
+                                           in_=openapi.IN_QUERY),
+                         openapi.Parameter('formation_start',
+                                           type=openapi.TYPE_STRING,
+                                           description='status',
+                                           in_=openapi.IN_QUERY,
+                                           format=openapi.FORMAT_DATETIME),
+                         openapi.Parameter('formation_end',
+                                           type=openapi.TYPE_STRING,
+                                           description='status',
+                                           in_=openapi.IN_QUERY,
+                                           format=openapi.FORMAT_DATETIME),
+                     ],
+                     responses={
+                         status.HTTP_200_OK: ShippingSerializer(many=True),
+                         status.HTTP_403_FORBIDDEN: "Forbidden",
+                     })
 @api_view(['GET'])
 def get_shippings_list(request):
     """
@@ -188,10 +292,17 @@ def get_shippings_list(request):
         filters &= Q(formation_datetime__gte=parse(formation_datetime_start_filter))
     if formation_datetime_end_filter is not None:
         filters &= Q(formation_datetime__lte=parse(formation_datetime_end_filter))
-    shippings = Shipping.objects.filter(filters)
+    shippings = Shipping.objects.filter(filters).select_related("client")
     serializer = ShippingSerializer(shippings, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+@swagger_auto_schema(method='get',
+                     responses={
+                         status.HTTP_200_OK: Shipping_with_info_Serializer(),
+                         status.HTTP_403_FORBIDDEN: "Forbidden",
+                         status.HTTP_404_NOT_FOUND: "Not Found",
+                     })
 @api_view(['GET'])
 def get_shipping(request, pk):
     """
@@ -205,6 +316,15 @@ def get_shipping(request, pk):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+
+@swagger_auto_schema(method='put',
+                     request_body=Adding_to_shippingSerializer,
+                     responses={
+                         status.HTTP_200_OK: Adding_to_shippingSerializer(),
+                         status.HTTP_400_BAD_REQUEST: "Bad Request",
+                         status.HTTP_403_FORBIDDEN: "Forbidden",
+                         status.HTTP_404_NOT_FOUND: "Not Found",
+                     })
 @api_view(['PUT'])
 def change_shipping(request, pk):
     """
@@ -223,7 +343,13 @@ def change_shipping(request, pk):
     else:
         return Response('Incorrect data', status=status.HTTP_400_BAD_REQUEST)
     
-
+@swagger_auto_schema(method='put',
+                     responses={
+                         status.HTTP_200_OK: ShippingSerializer(),
+                         status.HTTP_400_BAD_REQUEST: "Bad Request",
+                         status.HTTP_403_FORBIDDEN: "Forbidden",
+                         status.HTTP_404_NOT_FOUND: "Not Found",
+                     })
 @api_view(['PUT'])
 def form_shipping(request, pk):
     """
@@ -247,6 +373,14 @@ def form_shipping(request, pk):
     except Exception as e:
         print(e)
 
+
+
+@swagger_auto_schema(method='put',
+                     responses={
+                         status.HTTP_200_OK: ResolveShipping(),
+                         status.HTTP_403_FORBIDDEN: "Forbidden",
+                         status.HTTP_404_NOT_FOUND: "Not Found",
+                     })
 @api_view(['PUT'])
 def resolve_Shipping(request, pk):
 
@@ -280,7 +414,12 @@ def calculate_total_sum(shipping_id):
             amount = shipping_cargo.amount
             total_sum += cargo.price_per_ton * amount
         return total_sum
-
+@swagger_auto_schema(method='delete',
+                     responses={
+                         status.HTTP_200_OK: "OK",
+                         status.HTTP_403_FORBIDDEN: "Forbidden",
+                         status.HTTP_404_NOT_FOUND: "Not Found",
+                     })
 @api_view(['DELETE'])
 def delete_shipping(request, pk):
 
@@ -315,7 +454,12 @@ def delete_shipping(request, pk):
 #     shipping.save()
 #     return Response(status=status.HTTP_200_OK)
 
-
+@swagger_auto_schema(method='delete',
+                     responses={
+                         status.HTTP_200_OK: "OK",
+                         status.HTTP_403_FORBIDDEN: "Forbidden",
+                         status.HTTP_404_NOT_FOUND: "Not Found",
+                     })
 @api_view(['DELETE'])
 def delete_cargo_from_shipping(request, ck, sk):
     """
@@ -338,6 +482,14 @@ def delete_cargo_from_shipping(request, ck, sk):
     return Response(status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(method='put',
+                     request_body=Shipping_CargosSerializer,
+                     responses={
+                         status.HTTP_200_OK: Shipping_CargosSerializer(),
+                         status.HTTP_400_BAD_REQUEST: "Bad Request",
+                         status.HTTP_403_FORBIDDEN: "Forbidden",
+                         status.HTTP_404_NOT_FOUND: "Not Found",
+                     })
 @api_view(['PUT'])
 def change_shipping_cargo(request, ck, sk):
     """
@@ -354,7 +506,15 @@ def change_shipping_cargo(request, ck, sk):
     else:
         return Response('Failed to change data', status=status.HTTP_400_BAD_REQUEST)
 
+
+@swagger_auto_schema(method='post',
+                     request_body=UserSerializer,
+                     responses={
+                         status.HTTP_201_CREATED: "Created",
+                         status.HTTP_400_BAD_REQUEST: "Bad Request",
+                     })
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def create_user(request):
     """
     Создание пользователя
@@ -366,24 +526,76 @@ def create_user(request):
     return Response('Creation failed', status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(method='post',
+                     responses={
+                         status.HTTP_200_OK: "OK",
+                         status.HTTP_400_BAD_REQUEST: "Bad Request",
+                     },
+                     manual_parameters=[
+                         openapi.Parameter('username',
+                                           type=openapi.TYPE_STRING,
+                                           description='username',
+                                           in_=openapi.IN_FORM,
+                                           required=True),
+                         openapi.Parameter('password',
+                                           type=openapi.TYPE_STRING,
+                                           description='password',
+                                           in_=openapi.IN_FORM,
+                                           required=True)
+                     ])
+
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
+@parser_classes((FormParser,))
 def login_user(request):
     """
     Вход
     """
-    return Response('Login', status=status.HTTP_200_OK)
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    print(username,password)
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        session_id = str(uuid.uuid4())
+        session_storage.set(session_id, username)
+        response = Response(status=status.HTTP_201_CREATED)
+        response.set_cookie("session_id", session_id, samesite="lax")
+        return response
+    return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(method='post',
+                     responses={
+                         status.HTTP_204_NO_CONTENT: "No content",
+                         status.HTTP_403_FORBIDDEN: "Forbidden",
+                     })
 @api_view(['POST'])
+@permission_classes([IsAuth])
 def logout_user(request):
 
     """
     деавторизация
     """
-    return Response('Logout', status=status.HTTP_200_OK)
+    session_id = request.COOKIES["session_id"]
+    print(session_id)
+    if session_storage.exists(session_id):
+        session_storage.delete(session_id)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
+    return Response(status=status.HTTP_403_FORBIDDEN)
 
+@swagger_auto_schema(method='put',
+                     request_body=UserSerializer,
+                     responses={
+                         status.HTTP_200_OK: UserSerializer(),
+                         status.HTTP_400_BAD_REQUEST: "Bad Request",
+                         status.HTTP_403_FORBIDDEN: "Forbidden",
+                     })
 @api_view(['PUT'])
-def update_user(request, pk):
+@permission_classes([IsAuth])
+@authentication_classes([Auth_by_Session])
+def update_user(request):
     """
     Обновление данных пользователя
     """
@@ -394,14 +606,12 @@ def update_user(request, pk):
     #     return Response(serializer.data, status=status.HTTP_200_OK)
     # return Response('Failed to change user data', status=status.HTTP_400_BAD_REQUEST)
 
-    user = User.objects.filter(id=pk).first()
-    serializer = UserSerializer(user,data = request.data, partial=True)
+    serializer = UserSerializer(request.user, data=request.data, partial=True)
+    print(request.user)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-    else:
-        return Response('Incorrect data', status=status.HTTP_400_BAD_REQUEST)
-
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 # def increase(request):
 
 #     """

@@ -17,10 +17,24 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from app import views
-from rest_framework.authtoken.views import obtain_auth_token
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
 
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Mars cargo delivery API",
+      default_version='v1',
+      description="API for Mars cargo delivery",
+      contact=openapi.Contact(email="spacey@google.com"),
+      license=openapi.License(name="SAPCE Y License"),
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('admin/', admin.site.urls),
     path('cargoes', views.Get_CargoList, name='cargo_list'), #+
     path('shippings', views.get_shippings_list, name='shipping_list'), #+
@@ -38,7 +52,7 @@ urlpatterns = [
     path('shipping_cargo/<int:ck>/<int:sk>/change', views.change_shipping_cargo, name='change_shipping_cargo'), #+
     path('shipping_cargo/<int:ck>/<int:sk>/delete', views.delete_cargo_from_shipping, name='delete_shipping_cargo'), #+
     path('user/create', views.create_user, name='user_create'), #+
-    path('user/logout', views.logout_user, name='user_logout'), #+
-     path('user/login', views.login_user, name='user_login'), #+
-     path('user/<int:pk>/update', views.update_user, name='user_update'), #+
+    path('user/logout/', views.logout_user, name='user_logout'), #+
+     path('user/login/', views.login_user, name='user_login'), #+
+     path('user/update', views.update_user, name='user_update'), #+
 ]

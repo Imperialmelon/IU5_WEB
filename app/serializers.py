@@ -8,8 +8,14 @@ class CargoSerializer(serializers.ModelSerializer):
     
 
 
+class Client_Serialzier(serializers.ModelSerializer):
+        class Meta:
+            model = User
+            fields = ["id", "username"]
 
 class ShippingSerializer(serializers.ModelSerializer):
+    client = Client_Serialzier()
+
     class Meta:
         model = Shipping
         fields = ['pk',"creation_datetime", 'status', "completion_datetime" , 'formation_datetime' ,  'client', 'manager' , 'organization' ,'total_price']
@@ -34,7 +40,6 @@ class Adding_to_shippingSerializer(serializers.ModelSerializer):
             extra_kwargs = {
             'organization': {'read_only': False}
         }
-
 
 
 
