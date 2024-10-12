@@ -46,14 +46,10 @@ def Get_CargoList(request):
          cargoes_list = Cargo.objects.filter(title__istartswith=cargo_name, is_active=True).order_by('id')
     serializer = CargoSerializer(cargoes_list, many=True)
 
-    cnt = Shipping_Cargo.objects.filter(shipping_id=req.id).select_related('cargo').count() if req.id is not None else 0
-    
-    print(serializer.data)
-    # res = {
-    #     k : v for 
-    # }
-    # aboba = manyCargoesSerializer(cargoes_list, many=True)
+    cnt = Shipping_Cargo.objects.filter(shipping_id=req.id).select_related('cargo').count() if req is not None else 0
+    user_name = SINGLE_USER.username
     cargoes_list = serializer.data
+    cargoes_list.append(f'user_name : {user_name}')
     cargoes_list.append(f'shipping_id : {req.id if req is not None else 0}')
     cargoes_list.append(f'cnt : {cnt}')
     
@@ -188,7 +184,7 @@ def get_shippings_list(request):
         filters &= Q(formation_datetime__gte=parse(formation_datetime_start_filter))
     if formation_datetime_end_filter is not None:
         filters &= Q(formation_datetime__lte=parse(formation_datetime_end_filter))
-    shippings = Shipping.objects.filter(filters)
+    shippings = Shipping.objects.filter(filters).select_related("client")
     serializer = ShippingSerializer(shippings, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 

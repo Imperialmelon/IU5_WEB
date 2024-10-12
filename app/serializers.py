@@ -10,10 +10,13 @@ class CargoSerializer(serializers.ModelSerializer):
 
 
 class ShippingSerializer(serializers.ModelSerializer):
+    client = serializers.SerializerMethodField()
     class Meta:
         model = Shipping
-        fields = ['pk',"creation_datetime", 'status', "completion_datetime" , 'formation_datetime' ,  'client', 'manager' , 'organization' ,'total_price']
+        fields = ['pk',"creation_datetime", 'status', "completion_datetime" , 'formation_datetime' , 'manager' , 'organization' ,'total_price' ,  'client']
         # read_only_fields = ['status']
+    def get_client(self, obj):
+        return obj.client.username
 
 class Shipping_CargosSerializer(serializers.ModelSerializer):
     class Meta:
