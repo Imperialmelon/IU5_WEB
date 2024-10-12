@@ -21,7 +21,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .redis import session_storage
-from rest_framework.parsers import FormParser
+from rest_framework.parsers import FormParser,MultiPartParser
 import uuid
 from .auth import Auth_by_Session, AuthIfPos
 from .permissions import IsAuth, IsAuthManager
@@ -100,8 +100,9 @@ def Get_CargoList(request):
                          status.HTTP_200_OK: CargoSerializer(),
                          status.HTTP_404_NOT_FOUND: "Not Found",
                      })
-@permission_classes([AllowAny])
+
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def Get_Cargo(request, pk):
     """
     получение услуги
@@ -120,12 +121,14 @@ def Get_Cargo(request, pk):
                          status.HTTP_400_BAD_REQUEST: "Bad Request",
                          status.HTTP_403_FORBIDDEN: "Forbidden",
                      })
-@permission_classes([IsAuthManager])
+
 @api_view(['POST'])
+@permission_classes([IsAuthManager])
 def add_Cargo(request):
     """
     добавить новую услугу
     """
+    print(request.user.is_staff)
     serilizer = CargoSerializer(data=request.data)
     if serilizer.is_valid():
         cargo = serilizer.save()
@@ -141,8 +144,9 @@ def add_Cargo(request):
                          status.HTTP_400_BAD_REQUEST: "Bad Request",
                          status.HTTP_404_NOT_FOUND: "Not Found",
                      })
-@permission_classes([IsAuthManager])
+
 @api_view(['PUT'])
+@permission_classes([IsAuthManager])
 def Change_Cargo(request, pk):
     """
     изменить услугу
@@ -165,6 +169,7 @@ def Change_Cargo(request, pk):
                          status.HTTP_404_NOT_FOUND: "Not Found",
                      })       
 @api_view(['DELETE'])
+@permission_classes([IsAuthManager])
 def Delete_Cargo(request, pk):
     """
     удалить услугу
@@ -196,6 +201,8 @@ def Delete_Cargo(request, pk):
                          status.HTTP_404_NOT_FOUND: "Not Found",
                      })
 @api_view(['POST'])
+@permission_classes([IsAuth])
+@authentication_classes([Auth_by_Session])
 def CreateShipping(request, pk):
     """
     создать новое отправление или добавить туда груз
@@ -203,7 +210,7 @@ def CreateShipping(request, pk):
     cargo = Cargo.objects.filter(id=pk, is_active=True)
     if cargo is None:
         return Response('No such cargo', status=status.HTTP_404_NOT_FOUND)
-    shipping_id = get_or_create_shipping(SINGLE_USER.id)
+    shipping_id = get_or_create_shipping(request.user.id)
     shipping_cargo = Shipping_Cargo.objects.filter(
         Q(cargo_id=pk) & Q(shipping_id=shipping_id)
     ).first()
@@ -214,9 +221,9 @@ def CreateShipping(request, pk):
 
 
 def get_or_create_shipping(user_id):
-    req = Shipping.objects.filter(client_id = SINGLE_USER.id, status=Shipping.RequestStatus.DRAFT).first()
+    req = Shipping.objects.filter(client_id = user_id, status=Shipping.RequestStatus.DRAFT).first()
     if req is None:
-        shipping = Shipping(client_id = SINGLE_USER.id, status=Shipping.RequestStatus.DRAFT, organization='Объединенная Аэрокосмическая Корпорация')
+        shipping = Shipping(client_id = user_id, status=Shipping.RequestStatus.DRAFT, organization='Объединенная Аэрокосмическая Корпорация')
         shipping.save()
         return shipping.id
     return req.id
@@ -224,7 +231,7 @@ def get_or_create_shipping(user_id):
 @swagger_auto_schema(method="post",
                      manual_parameters=[
                          openapi.Parameter(name="image",
-                                           in_=openapi.IN_QUERY,
+                                           in_=openapi.IN_FORM,
                                            type=openapi.TYPE_FILE,
                                            required=True, description="Image")],
                      responses={
@@ -233,6 +240,8 @@ def get_or_create_shipping(user_id):
                          status.HTTP_403_FORBIDDEN: "Forbidden",
                      })
 @api_view(['POST'])
+@permission_classes([IsAuthManager])
+@parser_classes([MultiPartParser])
 def load_image_to_minio(request, pk):
     """
     загрузить картинку в минио
@@ -278,6 +287,8 @@ def load_image_to_minio(request, pk):
                          status.HTTP_403_FORBIDDEN: "Forbidden",
                      })
 @api_view(['GET'])
+@permission_classes([IsAuth])
+@authentication_classes([Auth_by_Session])
 def get_shippings_list(request):
     """
     получить список отправлений
@@ -292,6 +303,8 @@ def get_shippings_list(request):
         filters &= Q(formation_datetime__gte=parse(formation_datetime_start_filter))
     if formation_datetime_end_filter is not None:
         filters &= Q(formation_datetime__lte=parse(formation_datetime_end_filter))
+    if not request.user.is_staff:
+        filters &= Q(client=request.user)
     shippings = Shipping.objects.filter(filters).select_related("client")
     serializer = ShippingSerializer(shippings, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -304,6 +317,8 @@ def get_shippings_list(request):
                          status.HTTP_404_NOT_FOUND: "Not Found",
                      })
 @api_view(['GET'])
+@permission_classes([IsAuth])
+@authentication_classes([Auth_by_Session])
 def get_shipping(request, pk):
     """
     получить отправление
@@ -312,6 +327,9 @@ def get_shipping(request, pk):
     shipping = Shipping.objects.filter(filters).first()
     if shipping is None:
         return Response('No such shipping', status=status.HTTP_404_NOT_FOUND)
+    if not request.user.is_staff and shipping.client != request.user:
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
     serializer = Shipping_with_info_Serializer(shipping)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -326,11 +344,13 @@ def get_shipping(request, pk):
                          status.HTTP_404_NOT_FOUND: "Not Found",
                      })
 @api_view(['PUT'])
+@permission_classes([IsAuthManager])
+@authentication_classes([Auth_by_Session])
 def change_shipping(request, pk):
     """
     изменить отправление
     """
-    shipping = Shipping.objects.filter(id=pk).first()
+    shipping = Shipping.objects.filter(id=pk, manager = request.user).first()
     if shipping is None:
         return Response('No such shipping', status=status.HTTP_404_NOT_FOUND)
 
@@ -351,14 +371,18 @@ def change_shipping(request, pk):
                          status.HTTP_404_NOT_FOUND: "Not Found",
                      })
 @api_view(['PUT'])
+@permission_classes([IsAuth])
+@authentication_classes([Auth_by_Session])
 def form_shipping(request, pk):
     """
     сформировать отправление
     """
     try:
-        shipping = Shipping.objects.filter(id=pk, status=Shipping.RequestStatus.DRAFT).first()
+        shipping = Shipping.objects.filter(id=pk,status=Shipping.RequestStatus.DRAFT).first()
         if shipping is None:
             return Response("INo shipping ready for formation", status=status.HTTP_404_NOT_FOUND)
+        if not request.user.is_staff and shipping.client != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
         if shipping.organization is None or shipping.organization == "":
             return Response("No organization written", status=status.HTTP_400_BAD_REQUEST)
@@ -382,6 +406,8 @@ def form_shipping(request, pk):
                          status.HTTP_404_NOT_FOUND: "Not Found",
                      })
 @api_view(['PUT'])
+@permission_classes([IsAuthManager])
+@authentication_classes([Auth_by_Session])
 def resolve_Shipping(request, pk):
 
     """
@@ -397,7 +423,7 @@ def resolve_Shipping(request, pk):
             shipping = Shipping.objects.get(id=pk)
             shipping.total_price = calculate_total_sum(shipping.id)
             shipping.completion_datetime = datetime.now()
-            shipping.manager = SINGLE_ADM
+            shipping.manager = request.user
             shipping.save()
             serializer = ResolveShipping(shipping)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -421,6 +447,8 @@ def calculate_total_sum(shipping_id):
                          status.HTTP_404_NOT_FOUND: "Not Found",
                      })
 @api_view(['DELETE'])
+@permission_classes([IsAuth])
+@authentication_classes([Auth_by_Session])
 def delete_shipping(request, pk):
 
     """
@@ -429,7 +457,9 @@ def delete_shipping(request, pk):
     shipping = Shipping.objects.filter(id=pk,status=Shipping.RequestStatus.DRAFT).first()
     if shipping is None:
         return Response("No such shipping", status=status.HTTP_404_NOT_FOUND)
-
+    
+    if not request.user.is_staff and shipping.client != request.user:
+        return Response(status=status.HTTP_403_FORBIDDEN)
     shipping.status = Shipping.RequestStatus.DELETED
     shipping.save()
     return Response(status=status.HTTP_200_OK)
@@ -461,6 +491,8 @@ def delete_shipping(request, pk):
                          status.HTTP_404_NOT_FOUND: "Not Found",
                      })
 @api_view(['DELETE'])
+@permission_classes([IsAuth])
+@authentication_classes([Auth_by_Session])
 def delete_cargo_from_shipping(request, ck, sk):
     """
     Удаление груза из отправления
@@ -471,6 +503,9 @@ def delete_cargo_from_shipping(request, ck, sk):
     print(ck , sk)
     if cargo_in_shipping is None:
         return Response("Cargo not found", status=status.HTTP_404_NOT_FOUND)
+    
+    if not request.user.is_staff and Shipping.objects.filter(id=sk).first().client != request.user:
+        return Response(status=status.HTTP_403_FORBIDDEN)
     cargo_in_shipping.delete()
     shipping_id = cargo_in_shipping.shipping
     print(shipping_id)
@@ -491,11 +526,18 @@ def delete_cargo_from_shipping(request, ck, sk):
                          status.HTTP_404_NOT_FOUND: "Not Found",
                      })
 @api_view(['PUT'])
+@permission_classes([IsAuth])
+@authentication_classes([Auth_by_Session])
 def change_shipping_cargo(request, ck, sk):
     """
     Изменение данных о грузе в отправлении
     """
     print(ck, sk)
+    shipping = Shipping.objects.filter(id=sk).first()
+    if shipping is None:
+        return Response('Shipping not found', status=status.HTTP_404_NOT_FOUND)
+    if not request.user.is_staff and shipping.client != request.user:
+        return Response(status=status.HTTP_403_FORBIDDEN)
     cargo_in_shipping = Shipping_Cargo.objects.filter(cargo=ck, shipping=sk).first()
     if cargo_in_shipping is None:
         return Response("Cargo not found", status=status.HTTP_404_NOT_FOUND)

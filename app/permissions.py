@@ -15,13 +15,16 @@ class IsAuth(permissions.BasePermission):
         return True
     
 class IsAuthManager(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
+    def has_permission(self, request, view):
         session_id = request.COOKIES['session_id']
         if session_id is None:
             return False
         try:
              user_name = session_storage.get(session_id).decode('utf-8')
+             print(user_name)
         except:
             return False
         user = User.objects.filter(username=user_name).first()
+        print(user)
+        print(user.is_staff)
         return user.is_staff

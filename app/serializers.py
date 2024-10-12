@@ -8,18 +8,20 @@ class CargoSerializer(serializers.ModelSerializer):
     
 
 
-class Client_Serialzier(serializers.ModelSerializer):
-        class Meta:
-            model = User
-            fields = ["id", "username"]
+# class Client_Serialzier(serializers.ModelSerializer):
+#         class Meta:
+#             model = User
+#             fields = ["id", "username"]
 
 class ShippingSerializer(serializers.ModelSerializer):
-    client = Client_Serialzier()
+    client = serializers.SerializerMethodField()
 
     class Meta:
         model = Shipping
         fields = ['pk',"creation_datetime", 'status', "completion_datetime" , 'formation_datetime' ,  'client', 'manager' , 'organization' ,'total_price']
         # read_only_fields = ['status']
+    def get_client(self, obj):
+        return obj.client.username
 
 class Shipping_CargosSerializer(serializers.ModelSerializer):
     class Meta:
